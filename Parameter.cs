@@ -16,13 +16,15 @@ namespace CMLParser
         }
         public static implicit operator T(Parameter<T> parameter) => parameter.Value;
 
-        public string Identifier { get; }
-        public char? ShortIdentifier { get; }
+        public string LongIdentifier { get; internal set; }
+        public char? ShortIdentifier { get; internal set; }
         public string Description { get; internal set; }
         public Action<T> OnParseCallback { get; internal set; }
 
+        /*
         // Index on which was this parameter given by user. Might be useful for analytics of user behavior.
         public int GivenIndex { get; internal set; }
+        */
     }
 
     public sealed class Default<T> : Parameter<T>
@@ -37,7 +39,7 @@ namespace CMLParser
                 Required = false;
             }
         }
-        public bool Required { get; private set; } = true;
+        public bool Required { get; internal set; } = true;
 
         internal Default() { }
     }
@@ -49,7 +51,7 @@ namespace CMLParser
             get
             {
                 if (!IsSet)
-                    throw new Exception("Value not set.");
+                    throw new ValueNotSetException();
                 return _value;
             }
             internal set
@@ -58,9 +60,14 @@ namespace CMLParser
                 IsSet = true;
             }
         }
-        public bool IsSet { get; private set; } = false;
+        public bool IsSet { get; internal set; } = false;
 
         internal Optional() { }
+    }
+
+    public class ValueNotSetException : Exception
+    {
+
     }
 
     public sealed class ParameterFactory<T>
@@ -81,25 +88,25 @@ namespace CMLParser
             return this;
         }
 
+        public ParameterFactory<T> OnParseCallback(Action<T> callback)
+        {
+            return this;
+        }
+
         // So the index of a plain argument can be derermined by some value and not by relative order in the code
         public ParameterFactory<T> Index(T defaultValue)
         {
             return this;
         }
 
-        public ParameterFactory<T> OnParseCallback(Action<T> callback)
+        public Default<T> CreateDefault()
         {
-            return this;
+            return new Default<T>();
         }
 
         public Optional<T> CreateOptional()
         {
             return new Optional<T>();
-        }
-
-        public Default<T> CreateDefault()
-        {
-            return new Default<T>();
         }
     }
 }
