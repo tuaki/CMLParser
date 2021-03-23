@@ -33,7 +33,7 @@ namespace ExampleApplication
                 return;
             }
 
-            // Now we can use parsed opions
+            // Now we can use parsed options
             var options = result.Options;
 
             // Load input
@@ -51,8 +51,8 @@ namespace ExampleApplication
             if (options.logFile.IsSet)
             {
                 string log = " ... ";
-                using (var streamWriter = new StreamWriter(options.logFile))
-                    streamWriter.Write(log);
+                using var streamWriter = new StreamWriter(options.logFile);
+                streamWriter.Write(log);
             }
         }
     }
@@ -60,7 +60,7 @@ namespace ExampleApplication
     class Options
     {
         /// <value>
-        /// This paramete is requied, because it's <see cref="Default{T}"/> and it's default value is not set.
+        /// This parameter is required, because it's <see cref="Default{T}"/> and its default value is not set.
         /// </value>
         public Default<string> inputFile = new ParameterFactory<string>()
             .Identifier("input-file", 'i')
@@ -69,11 +69,11 @@ namespace ExampleApplication
 
         const string defaultOutputFile = "output.csv";
         /// <value>
-        /// This parameter has default value. It seems optional to the user because he or she can overwrite it, but its in fact required from the programmer's point of view.
+        /// This parameter has a default value. It seems optional to the user because he or she can overwrite it, but its in fact required from the programmer's point of view.
         /// </value>
         public Default<string> outputFile = new ParameterFactory<string>()
             .Identifier("output-file", 'o')
-            .Description("(Optional) The name of the output file. Deault value: " + defaultOutputFile)
+            .Description("(Optional) The name of the output file. Default value: " + defaultOutputFile)
             .DefaultValue(defaultOutputFile)
             .CreateDefault();
 
@@ -82,7 +82,7 @@ namespace ExampleApplication
         /// </value>
         public Optional<string> logFile = new ParameterFactory<string>()
             .Identifier("log-file", 'l')
-            .Description("(Optional) The name of the log file. If it's provided, progam will write some additional information here.")
+            .Description("(Optional) The name of the log file. If it's provided, the program will write some additional information here.")
             .CreateOptional();
     }
 }

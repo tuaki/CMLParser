@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CMLParser
 {
@@ -12,7 +8,7 @@ namespace CMLParser
         public T Value
         {
             get => _value;
-            internal set { _value = value; }
+            internal set => _value = value;
         }
         public static implicit operator T(Parameter<T> parameter) => parameter.Value;
 
