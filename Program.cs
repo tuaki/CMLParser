@@ -8,9 +8,33 @@ namespace ExampleApplication
     {
         static void Main(string[] args)
         {
-            var options = new Options();
+            var parser = new Parser<Options>(new Options());
 
-            // TODO - parse options
+#if DEBUG
+            // Let's perform consistency check first
+            var check = parser.Check();
+            if (!check.Status)
+            {
+                Console.WriteLine("Invalid options object!");
+                Console.Write(check.ErrorMessage);
+                return;
+            }
+#endif
+
+            // Assume we have some arguments we need to parse
+            string commandLineArguments = " ... ";
+            var result = parser.Parse(commandLineArguments);
+
+            if (!result.Status)
+            {
+                // Handle invalid input
+                Console.Write(result.ErrorMessage);
+                Console.Write(parser.GetHelperText());
+                return;
+            }
+
+            // Now we can use parsed opions
+            var options = result.Options;
 
             // Load input
             string input;

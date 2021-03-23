@@ -51,7 +51,7 @@ namespace CMLParser
             get
             {
                 if (!IsSet)
-                    throw new ValueNotSetException();
+                    throw new OptionValueNotSetException();
                 return _value;
             }
             internal set
@@ -65,7 +65,7 @@ namespace CMLParser
         internal Optional() { }
     }
 
-    public class ValueNotSetException : Exception
+    public class OptionValueNotSetException : Exception
     {
 
     }
