@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace CMLParser.Example
@@ -28,56 +29,49 @@ namespace CMLParser.Example
                 Console.Write(parser.GetHelperText());
                 return;
             }
-
-            // Now we can use parsed options
-            var options = result.Options;
-
-            // Load input
-            string input;
-            using (var streamReader = new StreamReader(options.inputFile))
-                input = streamReader.ReadToEnd();
-
-            // Compute something from the input
-            string output = " ... ";
-            using (var streamWriter = new StreamWriter(options.outputFile))
-                streamWriter.Write(output);
-
-
-            // Write log if it's required
-            if (options.logFile.IsSet) {
-                string log = " ... ";
-                using var streamWriter = new StreamWriter(options.logFile);
-                streamWriter.Write(log);
-            }
         }
     }
 
     class Options
     {
         /// <value>
-        /// This parameter is required, because it's <see cref="Default{T}"/> and its default value is not set.
-        /// </value>
-        public Default<string> inputFile = new ParameterFactory<string>()
-            .Identifier("input-file", 'i')
-            .Description("(Required) The name of the input file.")
-            .CreateDefault();
-
-        const string defaultOutputFile = "output.csv";
-        /// <value>
         /// This parameter has a default value. It seems optional to the user because he or she can overwrite it, but its in fact required from the programmer's point of view.
         /// </value>
-        public Default<string> outputFile = new ParameterFactory<string>()
-            .Identifier("output-file", 'o')
-            .Description("(Optional) The name of the output file. Default value: " + defaultOutputFile)
-            .DefaultValue(defaultOutputFile)
+        public Default<string> Format = new ParameterFactory<string>()
+            .Identifier("format", 'f')
+            .Description(
+                "Specify output format, possibly overriding the format specified in the environment variable TIME.")
+            .DefaultValue(Environment.GetEnvironmentVariable("TIME"))
+            .CreateDefault();
+
+        public Default<bool> Portability = new ParameterFactory<bool>()
+            .Identifier("portability", 'p')
+            .Description("Use the portable output format.")
+            .DefaultValue(false)
             .CreateDefault();
 
         /// <value>
         /// This parameter is optional - if the user provides it, the behavior of the program will change.
         /// </value>
-        public Optional<string> logFile = new ParameterFactory<string>()
-            .Identifier("log-file", 'l')
-            .Description("(Optional) The name of the log file. If it's provided, the program will write some additional information here.")
+        public Optional<string> OutputFile = new ParameterFactory<string>()
+            .Identifier("output", 'o')
+            .Description("Do not send the results to stderr, but overwrite the specified file.")
             .CreateOptional();
+
+        public Default<bool> Append = new ParameterFactory<bool>()
+            .Identifier("append", 'a')
+            .Description("(Used together with -o.) Do not overwrite but append.")
+            .DefaultValue(false)
+            .CreateDefault();
+
+        public Default<bool> Verbose = new ParameterFactory<bool>()
+            .Identifier("append", 'a')
+            .Description("Give very verbose output about all the program knows about.")
+            .DefaultValue(false)
+            .CreateDefault();
+
+        public Default<string[]> CommandAndArguments = new ParameterFactory<string[]>()
+            .Description("The command and its arguments to measure")
+            .CreateDefault();
     }
 }
