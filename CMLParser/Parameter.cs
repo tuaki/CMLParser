@@ -89,7 +89,7 @@ namespace CMLParser
             return this;
         }
 
-        // So the index of a plain argument can be derermined by some value and not by relative order in the code
+        // So the index of a plain argument can be determined by some value and not by relative order in the code
         public ParameterFactory<T> Index(T defaultValue)
         {
             return this;
