@@ -10,13 +10,13 @@ První jmenovaná třída má význam parametru, který má vždy nějakou hodno
 
 Parametry jsou generické podle následujících typů:
 
-- **bool**
-- **int**
-- **double**
-- **string**
-- **enum**
+- `bool`
+- `int`
+- `double`
+- `string`
+- `enum`
 
-U všech kromě **bool** lze použít i odvozené pole, tedy např. `Array<int>`.
+U všech kromě `bool` lze použít i odvozené pole, tedy např. `Array<int>`.
 
 ### Konfigurace ###
 
@@ -30,41 +30,17 @@ Pro vytvoření instance parametru je nutné nejdříve instanciovat továrnu
   jedná o `Default<T>`, nebude tento parametr *Required*. Naopak pro
   `Optional<T>` bude ignorována, protože tam nedává žádný smysl.
 - **OnParseCallback** - Funkce, která bude zavolána po naparsování všech
-  parametrů v případě, že i tento byl naparsován.
+  parametrů v případě, že i tento byl naparsován. Jejím argumentem bude hodnota
+  tohoto parametru.
 - **Index** - Určuje očekávané pořadí ve vstupu (pokud se jedná o *Plain*
   parametr). Hodnota je relativní, tzn. při parsování budou všechny parametry
-  seřazeny od nejmenšího indexu po největší.
+  seřazeny od nejmenšího indexu po největší. Pokud má více plain argumentů stejný
+  index, jejich pořadí není definované.
 
 Dále tu jsou metody `CreateDefault` resp. `CreateOptinal`, které vytvoří
 příslušné instance parametrů. Příklad:
 
 ```cs
-class Program {
-    static void Main() {
-        var parser = new Parser<Options>(new Options());
-#if DEBUG
-        // Let's perform consistency check first
-        var check = parser.Check();
-        if (!check.Status) {
-            Console.WriteLine("Invalid options object!");
-            Console.Write(check.ErrorMessage);
-            return;
-        }
-#endif
-        // Assume we have some arguments we need to parse
-        string commandLineArguments = " ... ";
-        var result = parser.Parse(commandLineArguments);
-        if (!result.Status) {
-            // Handle invalid input
-            Console.Write(result.ErrorMessage);
-            Console.Write(parser.GetHelperText());
-            return;
-        }
-        // Now we can use parsed options
-        var options = result.Options;
-    }
-}
-
 class Options
 {
     /// <value>
@@ -95,24 +71,77 @@ class Options
 }
 ```
 
-### Vlastnosti ###
-
-TODO
-
 ### Argumenty ###
 
-Parametry typu **bool** neakceptují žádné argumenty. Parametry všech ostatních
-typů vždy akceptují právě jeden argument, následující bezprostředně za
-identifikátorem (výjimkou jsou složené krátké identifikátory). Pole je možné
+Argumenty začínající jednou nebo dvěma pomlčkami (`-`, `--`) jsou automaticky
+parsovány jako identifikátory parametrů. Krátké identifikátory je možné sdružit
+(např. `-asdf`), dlouhé je nutné psát zvlášť.
+
+Parametry typu `bool` neakceptují žádné argumenty. Parametry všech ostatních
+typů vždy akceptují právě jeden argument. Pro dlouhé identifikátory musí následovat bezprostředně za
+znakem `=` (například `--file=myNewFile.txt`). Pro krátké identifikátory se vezme
+první následující argument, který ještě nepatří jinému parametru. Pole je možné
 zapsat opakováním daného parametru.
 
-V argumentu nemohou být použity speciální znaky (mezera, uvozovky). Ty lze
-případně zapsat jako "argument". Uvozovky v samotném argmuentu lze escapovat
-pomocí \", lomítko se escapuje jako \\.
+V argumentu nemohou být použity speciální znaky (mezera, uvozovky a nesmí začínat pomlčkou). Ty lze
+případně zapsat v uvozovkách jako "-speciální argument". Uvozovky v samotném argumentu lze escapovat
+pomocí \", lomítko se escapuje jako \\, pomlčka je tam normálně.
+
+Všechny argumenty následující za -- jsou parsovány jako plain argumenty. U plain argumentů je nutné
+zajistit jednoznačnost - konfigurace, kde je více než jeden plain argument typu `Array<T>`, není validní.
 
 ## Parser ##
 
-TODO
+Pro parsování stačí vytvořit nový objekt třídy `Parser<O>`, kde `O` je konfigurace (jakákoli třída,
+obsahující veřejné proměnné typu `Default<T>` či `Optional<T>`, které budou identifikovány jako
+parametry). V konstruktoru je nutné předat instanci této třídy.
+
+Metody:
+- **Check** - Zkontroluje, zda je objekt s konfigurací validní - například zda neobsahuje parametry
+se stejnými identifikátory nebo více plain argumentů typu pole. Tuto metodu je vhodné volat po každé
+změně konfigurace.
+- **Parse** - Naparsuje předaný řetězec podle konfigurace a výše uvedených pravidel.
+- **GetHelperText** - Vygeneruje nápovědu. Ta obsahuje identifikátory a popisy všech parametrů.
+
+První dvě metody vrací objekty obsahující:
+- **Status** - Zda operace uspěla či ne.
+- **ErrorMessage** - Chybová hláška v případě neúspěchu. Zejména v případě parsování nemusí
+být kompletní, parser se zpravidla zastaví na první nalezené chybě.
+- **Options** (pouze u metody **Parse**) - výsledný objekt s naparsovanými hodnotami parametrů.
+
+### Příklad použití ###
+
+Ukázka programu, který by mohl být vytvořen pomocí konfigurace výše:
+
+```cs
+class Program {
+    static void Main() {
+        var parser = new Parser<Options>(new Options());
+#if DEBUG
+        // Let's perform consistency check first
+        var check = parser.Check();
+        if (!check.Status) {
+            Console.WriteLine("Invalid options object!");
+            Console.Write(check.ErrorMessage);
+            return;
+        }
+#endif
+        // Assume we have some arguments we need to parse
+        string commandLineArguments = " ... ";
+        var result = parser.Parse(commandLineArguments);
+
+        // Handle invalid input
+        if (!result.Status) {
+            Console.Write(result.ErrorMessage);
+            Console.Write(parser.GetHelperText());
+            return;
+        }
+
+        // Now we can use parsed options
+        var options = result.Options;
+    }
+}
+```
 
 # Další vývoj #
 

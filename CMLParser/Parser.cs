@@ -4,18 +4,16 @@
     {
         private T inputOptions;
 
-        /* // This would work only for T : new(), which might limit some applications.
-        public Parser()
-        {
-            inputOptions = new T();
-        }
-        */
-
         public Parser(T options)
         {
             inputOptions = options;
         }
 
+        /// <summary>
+        /// Generates helper text from all parameters. It consists of:
+        /// [-shortIdentifier], [--longIdentifier] [description]
+        /// </summary>
+        /// <returns>Helper text with identifiers and descriptions of all parameters.</returns>
         public string GetHelperText()
         {
             return "You should have read the documentation.";
