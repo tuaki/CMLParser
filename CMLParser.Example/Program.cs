@@ -32,7 +32,7 @@ namespace CMLParser.Example
                 return;
             }
 
-            // Now the options are properly parsed and can be used
+            // Now we can use parsed options
             var options = result.Options;
 
             // Show help
